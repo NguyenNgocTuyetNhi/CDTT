@@ -28,35 +28,35 @@
                             <!-- Categories -->
                             <div class="mb-4">
                                 <h6>Danh mục</h6>
-                                @foreach($categories as $category)
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="category{{ $category->id }}" 
-                                           value="{{ $category->name }}" 
-                                           {{ request('category') == $category->name ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="category{{ $category->id }}">{{ $category->name }}</label>
-                                </div>
-                                @endforeach
-                            </div>
-
-                            <!-- Price Range -->
-                            <div class="mb-4">
-                                <h6>Khoảng giá</h6>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="price" id="price1">
-                                    <label class="form-check-label" for="price1">Dưới 200.000đ</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="price" id="price2">
-                                    <label class="form-check-label" for="price2">200.000đ - 500.000đ</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="price" id="price3">
-                                    <label class="form-check-label" for="price3">500.000đ - 1.000.000đ</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="price" id="price4">
-                                    <label class="form-check-label" for="price4">Trên 1.000.000đ</label>
-                                </div>
+                                <form method="GET" action="{{ route('products') }}" id="filterForm">
+                                    @foreach($categories as $category)
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="category" id="category{{ $category->id }}" value="{{ $category->name }}" {{ request('category') == $category->name ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="category{{ $category->id }}">{{ $category->name }}</label>
+                                    </div>
+                                    @endforeach
+                                    <!-- Price Range -->
+                                    <div class="mb-4 mt-3">
+                                        <h6>Khoảng giá</h6>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="price" id="price1" value="under_200" {{ request('price') == 'under_200' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="price1">Dưới 200.000đ</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="price" id="price2" value="200_500" {{ request('price') == '200_500' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="price2">200.000đ - 500.000đ</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="price" id="price3" value="500_1000" {{ request('price') == '500_1000' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="price3">500.000đ - 1.000.000đ</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="price" id="price4" value="over_1000" {{ request('price') == 'over_1000' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="price4">Trên 1.000.000đ</label>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Áp dụng bộ lọc</button>
+                                </form>
                             </div>
 
                             <!-- Brand -->
@@ -79,9 +79,6 @@
                                 @endforeach
                             </div>
 
-                            <form method="GET" action="{{ route('products') }}" id="filterForm">
-                                <button type="submit" class="btn btn-primary w-100">Áp dụng bộ lọc</button>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -118,7 +115,7 @@
                         <div class="col-md-6 col-lg-4">
                             <div class="card product-card h-100">
                                 <div class="position-relative">
-                                    <img src="{{ $product->image }}" class="card-img-top product-image" alt="{{ $product->name }}">
+                                    <img src="{{ asset($product->image) }}" class="card-img-top product-image" alt="{{ $product->name }}">
                                     @if($product->hasDiscount())
                                     <span class="position-absolute top-0 start-0 badge bg-danger m-2">Giảm {{ $product->getDiscountPercentage() }}%</span>
                                     @endif
@@ -126,6 +123,18 @@
                                         <button class="btn btn-sm btn-light rounded-circle">
                                             <i class="fas fa-heart"></i>
                                         </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ $product->name }}</h5>
+                                    <p class="card-text text-muted">{{ Str::limit($product->description, 100) }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="price">{{ $product->getFormattedPrice() }}</div>
+                                        <form action="{{ route('cart.add', $product->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="quantity" value="1">
+                                           
+                                        </form>
                                     </div>
                                 </div>
                                 <div class="card-body d-flex flex-column">
@@ -145,9 +154,13 @@
                                     <div class="mt-auto">
                                         <div class="row g-2">
                                             <div class="col-8">
-                                                <button class="btn btn-primary w-100">
-                                                    <i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ
-                                                </button>
+                                                <form action="{{ route('cart.add', $product->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="quantity" value="1">
+                                                    <button type="submit" class="btn btn-primary w-100">
+                                                        <i class="fas fa-shopping-cart me-2"></i>Thêm vào giỏ
+                                                    </button>
+                                                </form>
                                             </div>
                                             <div class="col-4">
                                                 <a href="{{ route('products.show', $product->id) }}" class="btn btn-outline-secondary w-100">
