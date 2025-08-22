@@ -172,7 +172,7 @@
                                 <div class="d-flex align-items-start border-bottom pb-3">
                                     <div class="flex-shrink-0 me-3">
                                         <img 
-                                            src="{{ asset('images/product/' . $item['thumbnail']) }}" 
+                                            src="{{ asset( $item['thumbnail']) }}" 
                                             alt="{{ $item['name'] }}"
                                             class="rounded" 
                                             style="width: 60px; height: 60px; object-fit: cover;"

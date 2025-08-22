@@ -13,6 +13,11 @@ class ProductController extends \App\Http\Controllers\Controller
     {
         $query = Product::where('is_active', true);
 
+        // Tìm kiếm theo tên sản phẩm
+        if ($request->has('search') && $request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
         // Lọc theo danh mục
         if ($request->has('category') && $request->category) {
             $query->where('category', $request->category);
@@ -88,8 +93,7 @@ class ProductController extends \App\Http\Controllers\Controller
         ]);
 
         $product = Product::findOrFail($id);
-        
-        if (!$product->is_active) {
+if (!$product->is_active) {
             return back()->with('error', 'Sản phẩm này hiện không khả dụng');
         }
 

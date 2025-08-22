@@ -3,6 +3,29 @@
 @section('title', 'Trang chủ - Beauty Shop')
 
 @section('content')
+    <!-- Global Search (under navbar, above banner) -->
+    <section class="py-3 bg-white border-bottom">
+        <div class="container">
+            <form action="{{ route('products') }}" method="GET">
+                <div class="row g-2 justify-content-center">
+                    <div class="col-lg-6 col-md-8">
+                        <div class="input-group input-group-lg">
+                            <input type="text" name="search" class="form-control" placeholder="Tìm kiếm sản phẩm..." value="{{ request('search') }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search me-2"></i>Tìm kiếm
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-4 d-flex align-items-center">
+                        <div class="form-check form-switch ms-md-3">
+                            <input class="form-check-input" type="checkbox" id="discountedSwitchTop" name="discounted" value="1" {{ request('discounted') ? 'checked' : '' }}>
+                            <label class="form-check-label ms-2" for="discountedSwitchTop">Chỉ sản phẩm giảm giá</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
     <!-- Banner Slider Section -->
     <section class="banner-section">
         <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">

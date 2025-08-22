@@ -24,11 +24,21 @@
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title mb-3">Bộ lọc</h5>
-                            
+                            <!-- Search -->
+                            <form method="GET" action="{{ route('products') }}" id="filterForm">
+                                <div class="mb-3">
+                                    <div class="input-group">
+                                        <input type="text" id="searchInput" name="search" class="form-control" placeholder="Tìm sản phẩm..." value="{{ request('search') }}">
+                                        <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" name="discounted" id="discounted" value="1" {{ request('discounted') ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="discounted">Chỉ sản phẩm đang giảm giá</label>
+                                    </div>
+                                </div>
                             <!-- Categories -->
                             <div class="mb-4">
                                 <h6>Danh mục</h6>
-                                <form method="GET" action="{{ route('products') }}" id="filterForm">
                                     @foreach($categories as $category)
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="category" id="category{{ $category->id }}" value="{{ $category->name }}" {{ request('category') == $category->name ? 'checked' : '' }}>
@@ -39,24 +49,24 @@
                                     <div class="mb-4 mt-3">
                                         <h6>Khoảng giá</h6>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="price" id="price1" value="under_200" {{ request('price') == 'under_200' ? 'checked' : '' }}>
+                                            <input class="form-check-input" type="radio" name="price_range" id="price1" value="under_200k" {{ request('price_range') == 'under_200k' ? 'checked' : '' }}>
                                             <label class="form-check-label" for="price1">Dưới 200.000đ</label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="price" id="price2" value="200_500" {{ request('price') == '200_500' ? 'checked' : '' }}>
+                                            <input class="form-check-input" type="radio" name="price_range" id="price2" value="200k_500k" {{ request('price_range') == '200k_500k' ? 'checked' : '' }}>
                                             <label class="form-check-label" for="price2">200.000đ - 500.000đ</label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="price" id="price3" value="500_1000" {{ request('price') == '500_1000' ? 'checked' : '' }}>
+                                            <input class="form-check-input" type="radio" name="price_range" id="price3" value="500k_1m" {{ request('price_range') == '500k_1m' ? 'checked' : '' }}>
                                             <label class="form-check-label" for="price3">500.000đ - 1.000.000đ</label>
                                         </div>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="price" id="price4" value="over_1000" {{ request('price') == 'over_1000' ? 'checked' : '' }}>
+                                            <input class="form-check-input" type="radio" name="price_range" id="price4" value="over_1m" {{ request('price_range') == 'over_1m' ? 'checked' : '' }}>
                                             <label class="form-check-label" for="price4">Trên 1.000.000đ</label>
                                         </div>
                                     </div>
                                     <button type="submit" class="btn btn-primary w-100">Áp dụng bộ lọc</button>
-                                </form>
+                            </form>
                             </div>
 
                             <!-- Brand -->
@@ -71,7 +81,7 @@
                                 @endphp
                                 @foreach($brands as $brand)
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="brand{{ $loop->index }}" 
+                                    <input class="form-check-input" type="checkbox" name="brand" id="brand{{ $loop->index }}" 
                                            value="{{ $brand }}" 
                                            {{ request('brand') == $brand ? 'checked' : '' }}>
                                     <label class="form-check-label" for="brand{{ $loop->index }}">{{ $brand }}</label>
@@ -111,11 +121,15 @@
 
                     <!-- Products Grid -->
                     <div class="row g-4">
-                        @foreach($products as $product)
+                        @forelse($products as $product)
                         <div class="col-md-6 col-lg-4">
                             <div class="card product-card h-100">
                                 <div class="position-relative">
-                                    <img src="{{ asset($product->image) }}" class="card-img-top product-image" alt="{{ $product->name }}">
+                                    @php
+                                        $img = $product->image;
+                                        $isUrl = Str::startsWith($img, ['http://', 'https://']);
+                                    @endphp
+                                    <img src="{{ $isUrl ? $img : asset($img) }}" class="card-img-top product-image" alt="{{ $product->name }}">
                                     @if($product->hasDiscount())
                                     <span class="position-absolute top-0 start-0 badge bg-danger m-2">Giảm {{ $product->getDiscountPercentage() }}%</span>
                                     @endif
@@ -172,7 +186,11 @@
                                 </div>
                             </div>
                         </div>
-                        @endforeach
+                        @empty
+                        <div class="col-12">
+                            <div class="text-center py-5 text-muted">Không tìm thấy sản phẩm phù hợp.</div>
+                        </div>
+                        @endforelse
                     </div>
 
                     <!-- Pagination -->
@@ -187,6 +205,16 @@
 
 @section('scripts')
 <script>
+    // Submit search on Enter key
+    const searchInputEl = document.getElementById('searchInput');
+    if (searchInputEl) {
+        searchInputEl.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('filterForm').submit();
+            }
+        });
+    }
     // Add to cart functionality
     document.querySelectorAll('.btn-primary').forEach(button => {
         if (button.textContent.includes('Thêm vào giỏ')) {
